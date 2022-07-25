@@ -1,6 +1,7 @@
 main .section.cards-container {
     background-color: #F1F3F4;
     padding-top: 80px;
+    margin: 2px
   }
   
   main .section.cards-container > div > h2:first-of-type {
