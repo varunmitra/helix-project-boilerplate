@@ -9,7 +9,7 @@ main .section.cards-container {
   }
   
   main .cards-container > div, main .cards-dark-container > div {
-    max-width: 370px;
+    max-width: 400px;
     
   }
   
