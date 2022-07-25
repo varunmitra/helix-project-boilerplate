@@ -1,9 +1,10 @@
-# Your Project's Title...
+# AEM Rockstar on Helix
+
 Your project's description...
 
 ## Environments
-- Preview: https://main--{repo}--{owner}.hlx.page/
-- Live: https://main--{repo}--{owner}.hlx.live/
+- Preview: https://main--aem-rockstar-website--adobe.hlx.page
+- Live: https://main--aem-rockstar-website--adobe.hlx.live
 
 ## Installation
 

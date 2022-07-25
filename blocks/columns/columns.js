@@ -10,10 +10,7 @@ OF ANY KIND, either express or implied. See the License for the specific languag
 governing permissions and limitations under the License.
 */
 
-// eslint-disable-next-line import/no-cycle
-import { sampleRUM } from './scripts.js';
-
-// Core Web Vitals RUM collection
-sampleRUM('cwv');
-
-// add more delayed functionality here
+export default function decorate(block) {
+  const cols = [...block.firstElementChild.children];
+  block.classList.add(`columns-${cols.length}-cols`);
+}

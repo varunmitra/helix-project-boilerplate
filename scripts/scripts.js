@@ -60,7 +60,7 @@ export function sampleRUM(checkpoint, data = {}) {
         document.head.appendChild(script);
       }
     }
-  } catch (e) {
+  } catch (error) {
     // something went wrong
   }
 }
@@ -133,27 +133,24 @@ export function toCamelCase(name) {
  * Replace icons with inline SVG and prefix with codeBasePath.
  * @param {Element} element
  */
-function replaceIcons(element) {
-  element.querySelectorAll('img.icon').forEach((img) => {
-    const span = document.createElement('span');
-    span.className = img.className;
-    img.replaceWith(span);
-  });
-}
-
-/**
- * Replace icons with inline SVG and prefix with codeBasePath.
- * @param {Element} element
- */
-export function decorateIcons(element) {
-  // prepare for forward compatible icon handling
-  replaceIcons(element);
-
-  element.querySelectorAll('span.icon').forEach((span) => {
-    const iconName = span.className.split('icon-')[1];
-    fetch(`${window.hlx.codeBasePath}/icons/${iconName}.svg`).then((resp) => {
-      if (resp.status === 200) resp.text().then((svg) => { span.innerHTML = svg; });
-    });
+export function decorateIcons(element = document) {
+  element.querySelectorAll('span.icon').forEach(async (span) => {
+    if (span.classList.length < 2 || !span.classList[1].startsWith('icon-')) {
+      return;
+    }
+    const icon = span.classList[1].substring(5);
+    // eslint-disable-next-line no-use-before-define
+    const resp = await fetch(`${window.hlx.codeBasePath}${ICON_ROOT}/${icon}.svg`);
+    if (resp.ok) {
+      const iconHTML = await resp.text();
+      if (iconHTML.match(/<style/i)) {
+        const img = document.createElement('img');
+        img.src = `data:image/svg+xml,${encodeURIComponent(iconHTML)}`;
+        span.appendChild(img);
+      } else {
+        span.innerHTML = iconHTML;
+      }
+    }
   });
 }
 
@@ -177,7 +174,7 @@ export async function fetchPlaceholders(prefix = 'default') {
             window.placeholders[prefix] = placeholders;
             resolve();
           });
-      } catch (e) {
+      } catch (error) {
         // error loading placeholders
         window.placeholders[prefix] = {};
         reject();
@@ -193,26 +190,16 @@ export async function fetchPlaceholders(prefix = 'default') {
  * @param {Element} block The block element
  */
 export function decorateBlock(block) {
-  const trimDashes = (str) => str.replace(/(^\s*-)|(-\s*$)/g, '');
-  const classes = Array.from(block.classList.values());
-  const blockName = classes[0];
-  if (!blockName) return;
-  const section = block.closest('.section');
-  if (section) {
-    section.classList.add(`${blockName}-container`.replace(/--/g, '-'));
+  const shortBlockName = block.classList[0];
+  if (shortBlockName) {
+    block.classList.add('block');
+    block.setAttribute('data-block-name', shortBlockName);
+    block.setAttribute('data-block-status', 'initialized');
+    const blockWrapper = block.parentElement;
+    blockWrapper.classList.add(`${shortBlockName}-wrapper`);
+    const section = block.closest('.section');
+    if (section) section.classList.add(`${shortBlockName}-container`);
   }
-  const blockWithVariants = blockName.split('--');
-  const shortBlockName = trimDashes(blockWithVariants.shift());
-  const variants = blockWithVariants.map((v) => trimDashes(v));
-  block.classList.add(shortBlockName);
-  block.classList.add(...variants);
-
-  block.classList.add('block');
-  block.setAttribute('data-block-name', shortBlockName);
-  block.setAttribute('data-block-status', 'initialized');
-
-  const blockWrapper = block.parentElement;
-  blockWrapper.classList.add(`${shortBlockName}-wrapper`);
 }
 
 /**
@@ -235,6 +222,13 @@ export function readBlockConfig(block) {
             value = as[0].href;
           } else {
             value = as.map((a) => a.href);
+          }
+        } else if (col.querySelector('img')) {
+          const imgs = [...col.querySelectorAll('img')];
+          if (imgs.length === 1) {
+            value = imgs[0].src;
+          } else {
+            value = imgs.map((img) => img.src);
           }
         } else if (col.querySelector('p')) {
           const ps = [...col.querySelectorAll('p')];
@@ -279,7 +273,7 @@ export function decorateSections($main) {
       const keys = Object.keys(meta);
       keys.forEach((key) => {
         if (key === 'style') section.classList.add(toClassName(meta.style));
-        else section.dataset[key] = meta[key];
+        else section.dataset[toCamelCase(key)] = meta[key];
       });
       sectionMeta.remove();
     }
@@ -367,17 +361,17 @@ export async function loadBlock(block, eager = false) {
             if (mod.default) {
               await mod.default(block, blockName, document, eager);
             }
-          } catch (err) {
+          } catch (error) {
             // eslint-disable-next-line no-console
-            console.log(`failed to load module for ${blockName}`, err);
+            console.log(`failed to load module for ${blockName}`, error);
           }
           resolve();
         })();
       });
       await Promise.all([cssLoaded, decorationComplete]);
-    } catch (err) {
+    } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(`failed to load block ${blockName}`, err);
+      console.log(`failed to load block ${blockName}`, error);
     }
     block.setAttribute('data-block-status', 'loaded');
   }
@@ -440,7 +434,7 @@ export function createOptimizedPicture(src, alt = '', eager = false, breakpoints
 /**
  * Normalizes all headings within a container element.
  * @param {Element} el The container element
- * @param {[string]]} allowedHeadings The list of allowed headings (h1 ... h6)
+ * @param {[string]} allowedHeadings The list of allowed headings (h1 ... h6)
  */
 export function normalizeHeadings(el, allowedHeadings) {
   const allowed = allowedHeadings.map((h) => h.toLowerCase());
@@ -466,51 +460,13 @@ export function normalizeHeadings(el, allowedHeadings) {
 }
 
 /**
- * Turns absolute links within the domain into relative links.
- * @param {Element} main The container element
- */
-export function makeLinksRelative(main) {
-  main.querySelectorAll('a').forEach((a) => {
-    // eslint-disable-next-line no-use-before-define
-    const hosts = ['hlx.page', 'hlx.live', ...PRODUCTION_DOMAINS];
-    if (a.href) {
-      try {
-        const url = new URL(a.href);
-        const relative = hosts.some((host) => url.hostname.includes(host));
-        if (relative) a.href = `${url.pathname}${url.search}${url.hash}`;
-      } catch (e) {
-        // something went wrong
-        // eslint-disable-next-line no-console
-        console.log(e);
-      }
-    }
-  });
-}
-
-/**
- * Decorates the picture elements and removes formatting.
- * @param {Element} main The container element
- */
-export function decoratePictures(main) {
-  main.querySelectorAll('img[src*="/media_"').forEach((img, i) => {
-    const newPicture = createOptimizedPicture(img.src, img.alt, !i);
-    const picture = img.closest('picture');
-    if (picture) picture.parentElement.replaceChild(newPicture, picture);
-    if (['EM', 'STRONG'].includes(newPicture.parentElement.tagName)) {
-      const styleEl = newPicture.parentElement;
-      styleEl.parentElement.replaceChild(newPicture, styleEl);
-    }
-  });
-}
-
-/**
  * Set template (page structure) and theme (page styles).
  */
 function decorateTemplateAndTheme() {
   const template = getMetadata('template');
-  if (template) document.body.classList.add(template);
+  if (template) document.body.classList.add(toClassName(template));
   const theme = getMetadata('theme');
-  if (theme) document.body.classList.add(theme);
+  if (theme) document.body.classList.add(toClassName(theme));
 }
 
 /**
@@ -605,9 +561,9 @@ export function initHlx() {
   if (scriptEl) {
     try {
       [window.hlx.codeBasePath] = new URL(scriptEl.src).pathname.split('/scripts/scripts.js');
-    } catch (e) {
+    } catch (error) {
       // eslint-disable-next-line no-console
-      console.log(e);
+      console.log(error);
     }
   }
 }
@@ -620,26 +576,15 @@ initHlx();
  * ------------------------------------------------------------
  */
 
-const LCP_BLOCKS = ['hero']; // add your LCP blocks to the list
+const LCP_BLOCKS = ['section-background']; // add your LCP blocks to the list
 const RUM_GENERATION = 'project-1'; // add your RUM generation information here
-const PRODUCTION_DOMAINS = [];
+const ICON_ROOT = '/icons';
 
 sampleRUM('top');
 window.addEventListener('load', () => sampleRUM('load'));
 document.addEventListener('click', () => sampleRUM('click'));
 
 loadPage(document);
-
-function buildHeroBlock(main) {
-  const h1 = main.querySelector('h1');
-  const picture = main.querySelector('picture');
-  // eslint-disable-next-line no-bitwise
-  if (h1 && picture && (h1.compareDocumentPosition(picture) & Node.DOCUMENT_POSITION_PRECEDING)) {
-    const section = document.createElement('div');
-    section.append(buildBlock('hero', { elems: [picture, h1] }));
-    main.prepend(section);
-  }
-}
 
 function loadHeader(header) {
   const headerBlock = buildBlock('header', '');
@@ -656,32 +601,14 @@ function loadFooter(footer) {
 }
 
 /**
- * Builds all synthetic blocks in a container element.
- * @param {Element} main The container element
- */
-function buildAutoBlocks(main) {
-  try {
-    buildHeroBlock(main);
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Auto Blocking failed', error);
-  }
-}
-
-/**
  * Decorates the main element.
  * @param {Element} main The main element
  */
 export function decorateMain(main) {
-  // forward compatible pictures redecoration
-  decoratePictures(main);
-  // forward compatible link rewriting
-  makeLinksRelative(main);
-
   // hopefully forward compatible button decoration
   decorateButtons(main);
   decorateIcons(main);
-  buildAutoBlocks(main);
+  // buildAutoBlocks(main);
   decorateSections(main);
   decorateBlocks(main);
 }
