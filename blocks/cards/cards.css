@@ -5,11 +5,12 @@ main .section.cards-container {
   
   main .section.cards-container > div > h2:first-of-type {
     margin-top: 0;
-    border: 1px solid #000000;
+    
   }
   
   main .cards-container > div, main .cards-dark-container > div {
     max-width: 370px;
+    border: 1px solid #000000;
   }
   
   main .cards {
