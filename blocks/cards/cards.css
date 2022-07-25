@@ -9,7 +9,7 @@ main .section.cards-container {
   }
   
   main .cards-container > div, main .cards-dark-container > div {
-    max-width: 800px;
+    max-width: 450px;
     
   }
   
@@ -19,7 +19,7 @@ main .section.cards-container {
     flex-direction: column;
     justify-content: left;
     margin-left: 10px;
-    border: 1px solid #000000;
+    
   }
   
   main .cards .card {
