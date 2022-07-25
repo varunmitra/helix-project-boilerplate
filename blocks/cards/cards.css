@@ -20,8 +20,8 @@ main .section.cards-container {
   
   main .cards .card {
     background-color: #FFF;
-    width: 100%;
-    margin: 0 auto 16px auto;
+    width: 50%;
+    margin: 2px auto 16px auto;
     border-radius: 20px;
     display: flex;
     flex-direction: column;
