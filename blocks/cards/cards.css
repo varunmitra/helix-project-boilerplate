@@ -16,8 +16,8 @@ main .section.cards-container {
   main .cards {
     padding: 0;
     display: flex;
-    flex-direction: column;
-    margin: 56px auto;
+    flex-direction: row;
+    margin: 16px auto;
     border: 1px solid #000000;
   }
   
