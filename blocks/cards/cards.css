@@ -1,6 +1,7 @@
 .cards-wrapper{
   width: 500px;
   float: inline-start;
+  overflow: auto;
 }
 .cards > ul {
   list-style: none;
