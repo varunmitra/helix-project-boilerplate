@@ -17,12 +17,13 @@ main .section.cards-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   grid-gap: 16px;
-  border-radius: 30px;
+  
 }
 
 .cards > ul > li {
   border: 1px solid var(--highlight-background-color);
-  background-color: var(--background-color)
+  background-color: var(--background-color);
+  border-radius: 30px;
 }
 
 .cards .cards-card-body {
