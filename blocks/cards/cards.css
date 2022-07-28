@@ -29,7 +29,7 @@ main .section.cards-container {
 .cards .cards-card-body {
   margin: 16px;
   max-width: 250px;
-  max-height: 100px;
+  
 }
 
 .cards .cards-card-image {
