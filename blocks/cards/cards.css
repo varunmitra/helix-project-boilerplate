@@ -53,16 +53,17 @@ h1{
   
     font-weight: bold;
     color: rgb(8, 8, 8);
-    font-size: 25px;
+    font-size: 1rem;
+    font-family: "Helvetica Neue", "Arial", sans-serif;
   
 }
 .cards > ul > li p {
   justify-content: flex-start;
   flex-basis: 75%;
   color: rgb(8, 8, 8);
-  font-size: 1rem;
+  font-size: .5rem;
   letter-spacing: 1px;
   font-family: "Helvetica Neue", "Arial", sans-serif;
   font-style: normal;
-  font-weight: 50;
+  
 }
