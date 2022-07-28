@@ -51,7 +51,7 @@ main .section.cards-container {
 h1{
   
     font-weight: bold;
-    color: #fff;
-    font-size: 10px;
+    color: rgb(8, 8, 8);
+    font-size: 30px;
   
 }
