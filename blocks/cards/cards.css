@@ -2,6 +2,7 @@ main .section.cards-container {
   background-color: #F1F3F4;
   padding-top: 80px;
   overflow: auto;
+  border-color: theme('colors.light.gray.200');
 }
 
 .cards-wrapper{
@@ -16,6 +17,7 @@ main .section.cards-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
   grid-gap: 16px;
+  border-radius: 30px;
 }
 
 .cards > ul > li {
@@ -28,6 +30,8 @@ main .section.cards-container {
 }
 
 .cards .cards-card-image {
+  background-color: theme('colors.light.gray.100');
+  border-color: theme('colors.light.gray.300');
   line-height: 0;
 }
 
