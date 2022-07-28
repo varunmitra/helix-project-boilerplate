@@ -37,7 +37,7 @@ main .section.cards-container {
   border-color: theme('colors.light.gray.300');
   line-height: 0;
   flex-basis: 25%;
-  border-radius: 30px;
+  
 }
 
 .cards .cards-card-body > *:first-child {
@@ -48,6 +48,7 @@ main .section.cards-container {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  border-radius: 30px;
 }
 h1{
   
